@@ -3,8 +3,10 @@ import Profile from './Profile';
 import EventDetails from './EventDetails';
 import EventCard from './EventCard';
 import NotificationsPage from './NotificationsPage';
+import AfterParty from './AfterParty';
+import MessagesPage from './MessagesPage';
 
-function TopHeader({ vipCount = 0, onProfileClick, onNotificationClick, notificationCount }) {
+function TopHeader({ vipCount = 0, onProfileClick, onNotificationClick, onAfterPartyClick, onMessagesClick, notificationCount }) {
   return (
     <div className="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-2 sm:pb-3">
       {/* Logo */}
@@ -40,6 +42,37 @@ function TopHeader({ vipCount = 0, onProfileClick, onNotificationClick, notifica
           </span>
           <span className="text-white text-sm font-semibold">{vipCount}</span>
         </div>
+
+        {/* AfterParty button */}
+        <button
+          onClick={onAfterPartyClick}
+          className="text-white/90 hover:text-white transition p-1"
+          aria-label="AfterParty"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 2L2 7L12 12L22 7L12 2Z"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M2 17L12 22L22 17"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M2 12L12 17L22 12"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
 
         {/* Notification button with badge */}
         <button
@@ -95,7 +128,11 @@ function TopHeader({ vipCount = 0, onProfileClick, onNotificationClick, notifica
         </button>
 
         {/* Chat bubbles - hidden on mobile */}
-        <button className="hidden sm:block text-white/90 hover:text-white transition" aria-label="Messages">
+        <button
+          onClick={onMessagesClick}
+          className="hidden sm:block text-white/90 hover:text-white transition"
+          aria-label="Messages"
+        >
           <svg width="22" height="20" viewBox="0 0 30 24" fill="none">
             <path
               d="M18 2C22.4183 2 26 5.13401 26 9C26 10.5525 25.4308 11.9847 24.4649 13.1479C24.7739 14.2529 25.4004 15.2371 25.9887 15.9903C26.1598 16.2094 26.0132 16.5312 25.7365 16.5464C24.4102 16.6191 22.9973 16.2911 21.8951 15.6801C20.7325 16.1998 19.4059 16.5 18 16.5C13.5817 16.5 10 13.366 10 9.5C10 5.634 13.5817 2 18 2Z"
@@ -126,6 +163,8 @@ export default function Dashboard({ userData, onLogout }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('ALL');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAfterParty, setShowAfterParty] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
   const [joinedEvents, setJoinedEvents] = useState([]);
 
   // Club progress data
@@ -288,11 +327,37 @@ export default function Dashboard({ userData, onLogout }) {
     setShowNotifications(true);
   };
 
+  const handleAfterPartyClick = () => {
+    setShowAfterParty(true);
+  };
+
+  const handleAfterPartyExit = () => {
+    setShowAfterParty(false);
+  };
+
+  const handleAfterPartyCreate = () => {
+    alert('🎉 Create your own event! This feature is coming soon.');
+  };
+
+  const handleMessagesClick = () => {
+    setShowMessages(true);
+  };
+
   const handleNotificationEventClick = useCallback((event) => {
     setShowNotifications(false);
     setSelectedEvent(event);
     setCurrentView('event-details');
   }, []);
+
+  // Show Messages Page
+  if (showMessages) {
+    return <MessagesPage onBack={() => setShowMessages(false)} />;
+  }
+
+  // Show AfterParty Page
+  if (showAfterParty) {
+    return <AfterParty onCreate={handleAfterPartyCreate} onExit={handleAfterPartyExit} />;
+  }
 
   // Show Notifications Page
   if (showNotifications) {
@@ -329,6 +394,8 @@ export default function Dashboard({ userData, onLogout }) {
         vipCount={0} 
         onProfileClick={handleProfileClick}
         onNotificationClick={handleNotificationClick}
+        onAfterPartyClick={handleAfterPartyClick}
+        onMessagesClick={handleMessagesClick}
         notificationCount={joinedEvents.length}
       />
 
