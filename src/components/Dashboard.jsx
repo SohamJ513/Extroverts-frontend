@@ -173,7 +173,8 @@ export default function Dashboard({ userData, onLogout }) {
   const progressPercentage = (currentHVTs / maxHVTs) * 100;
   const hvtToGolden = maxHVTs - currentHVTs;
 
-  const allEvents = [
+  // ✅ FIXED: Wrap allEvents in useMemo to prevent recreation on every render
+  const allEvents = useMemo(() => [
     {
       id: 1,
       title: 'Parttyyyy',
@@ -252,7 +253,7 @@ export default function Dashboard({ userData, onLogout }) {
       city: 'Thane',
       location: 'Viviana Mall, Thane, Maharashtra',
     }
-  ];
+  ], []);
 
   const handleJoinEvent = (event) => {
     if (!joinedEvents.find(e => e.id === event.id)) {
@@ -271,7 +272,7 @@ export default function Dashboard({ userData, onLogout }) {
     );
   };
 
-  // ✅ FIXED: Added allEvents to dependency array
+  // ✅ FIXED: allEvents is now stable and won't change on every render
   const getFilteredEvents = useMemo(() => {
     const userState = userData?.state || '';
     const userCity = userData?.city || '';
@@ -309,7 +310,7 @@ export default function Dashboard({ userData, onLogout }) {
       const matchesFilter = filterType === 'ALL' || event.type === filterType;
       return matchesSearch && matchesFilter;
     });
-  }, [allEvents, userData?.state, userData?.city, searchTerm, filterType]); // ✅ Added allEvents
+  }, [allEvents, userData?.state, userData?.city, searchTerm, filterType]);
 
   const handleEventClick = useCallback((event) => {
     setSelectedEvent(event);
