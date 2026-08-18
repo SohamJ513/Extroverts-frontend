@@ -7,6 +7,8 @@ export default function StepInvite() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
 
   const funFacts = [
     "KINDNESS = GOOD HAIR DAY",
@@ -18,11 +20,66 @@ export default function StepInvite() {
     "YES. SPELLING MISTAKE."
   ];
 
+  // Password validation rules
+  const validatePassword = (password) => {
+    const errors = [];
+    let strength = 0;
+
+    if (password.length < 8) {
+      errors.push('At least 8 characters');
+    } else {
+      strength++;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      errors.push('At least one uppercase letter');
+    } else {
+      strength++;
+    }
+
+    if (!/[a-z]/.test(password)) {
+      errors.push('At least one lowercase letter');
+    } else {
+      strength++;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      errors.push('At least one number');
+    } else {
+      strength++;
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      errors.push('At least one special character (!@#$%^&*)');
+    } else {
+      strength++;
+    }
+
+    return { errors, strength };
+  };
+
+  const handlePasswordChange = (e) => {
+    const password = e.target.value;
+    updateUserData({ password: password });
+    
+    const { errors, strength } = validatePassword(password);
+    setPasswordStrength(strength);
+    
+    if (password && errors.length > 0) {
+      setPasswordError(errors.join(', '));
+    } else if (password && errors.length === 0) {
+      setPasswordError('');
+    } else {
+      setPasswordError('');
+    }
+  };
+
   const handleSubmit = () => {
-    // Validate password
     const password = userData.password || '';
-    if (password.length < 4) {
-      setPasswordError('Password must be at least 4 characters');
+    const { errors } = validatePassword(password);
+    
+    if (errors.length > 0) {
+      setPasswordError('Password must have: ' + errors.join(', '));
       return;
     }
     setPasswordError('');
@@ -32,11 +89,24 @@ export default function StepInvite() {
       setIsSubmitting(false);
       setShowSuccess(true);
       showToast('🎉 Welcome to Extroverts!', 'success');
-      // Navigate to dashboard after showing success
       setTimeout(() => {
         goToNextStep();
       }, 1500);
     }, 2000);
+  };
+
+  const getStrengthColor = () => {
+    if (passwordStrength <= 2) return 'bg-red-500';
+    if (passwordStrength === 3) return 'bg-yellow-500';
+    if (passwordStrength === 4) return 'bg-blue-400';
+    return 'bg-green-500';
+  };
+
+  const getStrengthText = () => {
+    if (passwordStrength <= 2) return 'Weak';
+    if (passwordStrength === 3) return 'Fair';
+    if (passwordStrength === 4) return 'Good';
+    return 'Strong';
   };
 
   if (showSuccess) {
@@ -103,22 +173,67 @@ export default function StepInvite() {
             <label className="block text-gray-400 text-[10px] sm:text-xs font-medium mb-1">
               PASSWORD
             </label>
-            <input
-              type="password"
-              value={userData.password || ''}
-              onChange={(e) => {
-                updateUserData({ password: e.target.value });
-                if (passwordError) setPasswordError('');
-              }}
-              className={`w-full px-0 py-2.5 sm:py-3 bg-transparent border-b-2 text-white text-base sm:text-lg focus:outline-none placeholder-gray-600
-                ${passwordError ? 'border-red-500' : 'border-gray-700 focus:border-purple-500'}`}
-              placeholder="Create a password"
-              minLength={4}
-              disabled={isSubmitting}
-            />
-            <p className="text-gray-500 text-[10px] sm:text-xs mt-1">Password must be at least 4 characters</p>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={userData.password || ''}
+                onChange={handlePasswordChange}
+                className={`w-full px-0 py-2.5 sm:py-3 bg-transparent border-b-2 text-white text-base sm:text-lg focus:outline-none placeholder-gray-600 pr-10
+                  ${passwordError ? 'border-red-500' : 'border-gray-700 focus:border-purple-500'}`}
+                placeholder="Create a strong password"
+                minLength={8}
+                disabled={isSubmitting}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition text-lg"
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+
+            {/* Password Strength Bar */}
+            {userData.password && userData.password.length > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-300 ${getStrengthColor()}`}
+                      style={{ width: `${(passwordStrength / 5) * 100}%` }}
+                    />
+                  </div>
+                  <span className={`text-[10px] sm:text-xs font-medium ${getStrengthColor().replace('bg-', 'text-')}`}>
+                    {getStrengthText()}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Password Requirements */}
+            <div className="mt-2">
+              <p className="text-gray-500 text-[10px] sm:text-xs">Password must have:</p>
+              <ul className="text-[10px] sm:text-xs space-y-0.5 mt-0.5">
+                <li className={userData.password?.length >= 8 ? 'text-green-400' : 'text-gray-500'}>
+                  {userData.password?.length >= 8 ? '✅' : '❌'} At least 8 characters
+                </li>
+                <li className={/[A-Z]/.test(userData.password || '') ? 'text-green-400' : 'text-gray-500'}>
+                  {/[A-Z]/.test(userData.password || '') ? '✅' : '❌'} At least one uppercase letter
+                </li>
+                <li className={/[a-z]/.test(userData.password || '') ? 'text-green-400' : 'text-gray-500'}>
+                  {/[a-z]/.test(userData.password || '') ? '✅' : '❌'} At least one lowercase letter
+                </li>
+                <li className={/[0-9]/.test(userData.password || '') ? 'text-green-400' : 'text-gray-500'}>
+                  {/[0-9]/.test(userData.password || '') ? '✅' : '❌'} At least one number
+                </li>
+                <li className={/[!@#$%^&*(),.?":{}|<>]/.test(userData.password || '') ? 'text-green-400' : 'text-gray-500'}>
+                  {/[!@#$%^&*(),.?":{}|<>]/.test(userData.password || '') ? '✅' : '❌'} At least one special character
+                </li>
+              </ul>
+            </div>
+
             {passwordError && (
-              <p className="text-red-500 text-xs sm:text-sm mt-1">{passwordError}</p>
+              <p className="text-red-500 text-xs sm:text-sm mt-1.5">{passwordError}</p>
             )}
           </div>
 
