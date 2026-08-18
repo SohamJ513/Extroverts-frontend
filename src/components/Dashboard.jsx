@@ -271,6 +271,7 @@ export default function Dashboard({ userData, onLogout }) {
     );
   };
 
+  // ✅ FIXED: Added allEvents to dependency array
   const getFilteredEvents = useMemo(() => {
     const userState = userData?.state || '';
     const userCity = userData?.city || '';
@@ -308,7 +309,7 @@ export default function Dashboard({ userData, onLogout }) {
       const matchesFilter = filterType === 'ALL' || event.type === filterType;
       return matchesSearch && matchesFilter;
     });
-  }, [userData?.state, userData?.city, searchTerm, filterType]);
+  }, [allEvents, userData?.state, userData?.city, searchTerm, filterType]); // ✅ Added allEvents
 
   const handleEventClick = useCallback((event) => {
     setSelectedEvent(event);
