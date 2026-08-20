@@ -9,8 +9,10 @@ import React from "react";
 export default function LandingPage({ onContinue = () => {} }) {
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black flex flex-col">
-      {/* Blurred gradient blobs forming the background */}
-      <div className="absolute inset-0 top-0 h-[72%] overflow-hidden blur-[40px]">
+      {/* Blurred gradient blobs forming the background — extends well past the
+          midpoint so there's plenty of room for the colors to dissolve into
+          black gradually, instead of being cut short and muted early. */}
+      <div className="absolute inset-0 top-0 h-[88%] overflow-hidden blur-[40px]">
         <div className="absolute -top-[15%] left-[5%] w-[80%] h-[50%] rounded-full bg-[#3a2ea8] opacity-85" />
         <div className="absolute -top-[10%] -right-[20%] w-[75%] h-[60%] rounded-full bg-[#26c6da] opacity-90" />
         <div className="absolute top-[5%] -left-[15%] w-[70%] h-[50%] rounded-full bg-[#f5a623] opacity-90" />
@@ -30,14 +32,16 @@ export default function LandingPage({ onContinue = () => {} }) {
         />
         <defs>
           <linearGradient id="mountainGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#141a2e" />
+            <stop offset="0%" stopColor="#141a2e" stopOpacity="0.4" />
             <stop offset="100%" stopColor="#05060a" />
           </linearGradient>
         </defs>
       </svg>
 
-      {/* Bottom scrim so the button/text sit on solid black */}
-      <div className="absolute left-0 right-0 bottom-0 h-[44%] bg-black" />
+      {/* Gradual fade to solid black — colors stay vivid through the middle
+          of the screen and only fully resolve to black near the bottom,
+          instead of being washed out early by an opaque mid-stop. */}
+      <div className="absolute left-0 right-0 bottom-0 top-[38%] bg-gradient-to-b from-transparent to-black" />
 
       {/* Content */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 sm:px-8 pb-12 sm:pb-16">
